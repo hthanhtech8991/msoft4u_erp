@@ -72,7 +72,7 @@ const menuItems: MenuItem[] = [
   { 
     icon: Truck, 
     label: 'Mua hàng',
-    path: '/procurement',
+    path: '/procurement/po',
     children: [
       { label: 'Nhà cung cấp', path: '/procurement/vendors' },
       { label: 'Đơn mua hàng (PO)', path: '/procurement/po' },
@@ -84,6 +84,7 @@ const menuItems: MenuItem[] = [
     label: 'Kho hàng',
     path: '/inventory',
     children: [
+      { label: 'Danh mục sản phẩm', path: '/inventory/products' },
       { label: 'Quản lý kho bãi', path: '/inventory' },
       { label: 'Kiểm kê tồn kho', path: '/inventory/audit' },
       { label: 'Chuyển kho nội bộ', path: '/inventory/transfer' }
@@ -132,10 +133,12 @@ const menuItems: MenuItem[] = [
   },
 ];
 
-export const Sidebar = () => {
+export const Sidebar = ({ isCollapsed }: { isCollapsed: boolean }) => {
   const [openMenus, setOpenMenus] = useState<string[]>(['Bảng điều khiển']);
+  const [hoveredItem, setHoveredItem] = useState<string | null>(null);
 
   const toggleMenu = (label: string) => {
+    if (isCollapsed) return;
     setOpenMenus(prev => 
       prev.includes(label) 
         ? prev.filter(item => item !== label) 
@@ -144,59 +147,135 @@ export const Sidebar = () => {
   };
 
   return (
-    <aside className="w-64 bg-white border-r border-gray-100 flex flex-col h-screen sticky top-0 overflow-y-auto scrollbar-hide">
-      <div className="p-5 flex items-center gap-2">
-        <div className="w-7 h-7 bg-blue-600 rounded-lg flex items-center justify-center">
-          <ChevronLeft className="text-white w-5 h-5 -rotate-45" />
+    <aside className={cn(
+      "bg-white border-r border-gray-100 flex flex-col h-screen sticky top-0 overflow-y-visible transition-all duration-300 ease-in-out z-40",
+      isCollapsed ? "w-20" : "w-64"
+    )}>
+      <div className={cn(
+        "p-5 flex items-center gap-2",
+        isCollapsed && "flex-col p-4 mb-4"
+      )}>
+        <div className="flex items-center gap-2 overflow-hidden">
+          <div className="w-7 h-7 bg-blue-600 rounded-lg flex-shrink-0 flex items-center justify-center">
+            <ChevronLeft className="text-white w-5 h-5 -rotate-45" />
+          </div>
+          {!isCollapsed && (
+            <motion.span 
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="text-lg font-bold text-blue-600 tracking-tight uppercase whitespace-nowrap"
+            >
+              ERP System
+            </motion.span>
+          )}
         </div>
-        <span className="text-lg font-bold text-blue-600 tracking-tight uppercase">ERP System</span>
       </div>
 
-      <div className="px-4 mb-4">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
-          <input 
-            type="text" 
-            placeholder="Tìm kiếm menu..." 
-            className="w-full bg-gray-50 border-none rounded-xl py-2 pl-9 pr-4 text-xs focus:ring-2 focus:ring-blue-100 transition-all outline-none"
-          />
+      {!isCollapsed && (
+        <div className="px-4 mb-6">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+            <motion.input 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              type="text" 
+              placeholder="Tìm kiếm menu..." 
+              className="w-full bg-gray-50 border-none rounded-xl py-2 pl-9 pr-4 text-xs focus:ring-2 focus:ring-blue-100 transition-all outline-none"
+            />
+          </div>
         </div>
-      </div>
+      )}
 
-      <nav className="flex-1 px-3 space-y-0.5 pb-8">
+      <nav className={cn(
+        "flex-1 px-3 pb-8",
+        isCollapsed ? "space-y-6 flex flex-col items-center" : "space-y-1"
+      )}>
         {menuItems.map((item, index) => {
           const isOpen = openMenus.includes(item.label);
           const hasChildren = item.children && item.children.length > 0;
+          const isHovered = hoveredItem === item.label;
 
           return (
-            <div key={index} className="space-y-0.5">
+            <div 
+              key={index} 
+              className="relative w-full"
+              onMouseEnter={() => isCollapsed && setHoveredItem(item.label)}
+              onMouseLeave={() => isCollapsed && setHoveredItem(null)}
+            >
               <div
                 onClick={() => hasChildren && toggleMenu(item.label)}
                 className={cn(
-                  "w-full flex items-center justify-between px-3 py-2 rounded-xl transition-all group cursor-pointer",
-                  "text-gray-500 hover:bg-gray-50"
+                  "w-full flex items-center px-3 py-2.5 rounded-xl transition-all group cursor-pointer relative",
+                  "text-gray-500 hover:bg-blue-50 hover:text-blue-600",
+                  isCollapsed ? "justify-center p-3" : "justify-between",
+                  isCollapsed && isHovered && "bg-blue-50 text-blue-600 shadow-sm"
                 )}
               >
                 <div className="flex items-center gap-2.5">
-                  <item.icon className={cn("w-4.5 h-4.5", "text-gray-400 group-hover:text-gray-600")} />
-                  <span className="text-xs font-semibold">{item.label}</span>
+                  <item.icon className={cn(
+                    "transition-all duration-200",
+                    isCollapsed ? "w-5 h-5" : "w-4.5 h-4.5",
+                    (isHovered || (!isCollapsed && isOpen)) ? "text-blue-600" : "text-gray-400 group-hover:text-blue-600"
+                  )} />
+                  {!isCollapsed && (
+                    <motion.span 
+                      initial={{ opacity: 0, x: -5 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      className="text-xs font-semibold whitespace-nowrap"
+                    >
+                      {item.label}
+                    </motion.span>
+                  )}
                 </div>
-                {hasChildren && (
+                {!isCollapsed && hasChildren && (
                   <ChevronDown className={cn(
                     "w-3.5 h-3.5 transition-transform duration-200 text-gray-400",
                     isOpen && "rotate-180 text-blue-600"
                   )} />
                 )}
+
+                {/* Floating Submenu for Collapsed State */}
+                <AnimatePresence>
+                  {isCollapsed && isHovered && hasChildren && (
+                    <motion.div
+                      initial={{ opacity: 0, x: 10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: 10 }}
+                      className="absolute left-full ml-2 top-0 w-56 bg-white border border-gray-100 rounded-2xl shadow-xl shadow-gray-200/50 p-2 z-50"
+                    >
+                      <div className="px-3 py-2 border-b border-gray-50 mb-1">
+                        <span className="text-[10px] font-bold text-blue-600 uppercase tracking-wider">{item.label}</span>
+                      </div>
+                      <div className="space-y-0.5">
+                        {item.children?.map((child, childIdx) => (
+                          <NavLink
+                            key={childIdx}
+                            to={child.path}
+                            className={({ isActive }) => cn(
+                              "w-full block px-3 py-2 rounded-lg text-[11px] transition-colors",
+                              isActive 
+                                ? "text-blue-600 font-bold bg-blue-50/50" 
+                                : "text-gray-500 hover:text-blue-600 hover:bg-gray-50"
+                            )}
+                          >
+                            {child.label}
+                          </NavLink>
+                        ))}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
 
+              {/* Standard Accordion Submenu for Expanded State */}
               <AnimatePresence initial={false}>
-                {isOpen && hasChildren && (
+                {!isCollapsed && isOpen && hasChildren && (
                   <motion.div
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: 'auto', opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
                     transition={{ duration: 0.2, ease: 'easeInOut' }}
-                    className="overflow-hidden pl-10 space-y-0.5"
+                    className="overflow-hidden pl-10 space-y-0.5 mt-1"
                   >
                     {item.children?.map((child, childIdx) => (
                       <NavLink

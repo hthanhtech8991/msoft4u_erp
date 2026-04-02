@@ -6,9 +6,3 @@ coverage/
 *.log
 .env*
 !.env.example
-# IDE
-.vscode/
-.idea/
-
-# Environment files
-yarn.lock

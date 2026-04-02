@@ -1,15 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
 
 export const Layout = () => {
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
   return (
     <div className="flex min-h-screen bg-[#f8fafc] font-sans text-gray-900">
-      <Sidebar />
+      <Sidebar isCollapsed={isCollapsed} />
       
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <Header />
+        <Header isCollapsed={isCollapsed} onToggle={() => setIsCollapsed(!isCollapsed)} />
         
         <main className="flex-1 overflow-y-auto p-5 space-y-5">
           <Outlet />

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Crown, ChevronDown, User, Settings, LogOut, Bell } from 'lucide-react';
+import { Crown, ChevronDown, User, Settings, LogOut, Bell, Menu, X } from 'lucide-react';
 import { cn } from '@/src/lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -10,7 +10,12 @@ const tabs = [
   { label: 'Doanh nghiệp' },
 ];
 
-export const Header = () => {
+interface HeaderProps {
+  isCollapsed: boolean;
+  onToggle: () => void;
+}
+
+export const Header = ({ isCollapsed, onToggle }: HeaderProps) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -37,24 +42,36 @@ export const Header = () => {
 
   return (
     <header className="h-14 bg-white border-b border-gray-100 flex items-center justify-between px-6 sticky top-0 z-20">
-      <div className="flex items-center gap-6 h-full">
-        {tabs.map((tab, index) => (
-          <button
-            key={index}
-            className={cn(
-              "h-full px-1 text-xs font-semibold relative transition-colors",
-              tab.active ? "text-blue-600" : "text-gray-500 hover:text-gray-700"
-            )}
-          >
-            {tab.label}
-            {tab.active && (
-              <motion.div 
-                layoutId="activeTab"
-                className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 rounded-t-full" 
-              />
-            )}
-          </button>
-        ))}
+      <div className="flex items-center gap-4 h-full">
+        <button 
+          onClick={onToggle}
+          className="p-2 hover:bg-gray-50 rounded-xl text-gray-400 hover:text-blue-600 transition-all"
+          title={isCollapsed ? "Mở rộng Sidebar" : "Thu nhỏ Sidebar"}
+        >
+          {isCollapsed ? <Menu className="w-5 h-5" /> : <X className="w-5 h-5" />}
+        </button>
+
+        <div className="h-6 w-px bg-gray-100 mx-2" />
+
+        <div className="flex items-center gap-6 h-full">
+          {tabs.map((tab, index) => (
+            <button
+              key={index}
+              className={cn(
+                "h-full px-1 text-xs font-semibold relative transition-colors",
+                tab.active ? "text-blue-600" : "text-gray-500 hover:text-gray-700"
+              )}
+            >
+              {tab.label}
+              {tab.active && (
+                <motion.div 
+                  layoutId="activeTab"
+                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 rounded-t-full" 
+                />
+              )}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="flex items-center gap-3">
